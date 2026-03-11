@@ -33,14 +33,14 @@ class ScreenCapture:
         # load template
         test_path = (TEMPLATE_DIR/template_name).resolve()
         template = cv2.imread(str(test_path))
-        width = template.shape[0]
-        height = template.shape[1]
-        if template is None:
+        width = template.shape[1] # rows
+        height = template.shape[0] # cols
+        if template is None: 
             raise FileNotFoundError(f"Could not find file at {test_path}")
         
         # take screenshot
         monitor = self.sct.monitors[1] 
-        print(monitor["width"], monitor["height"])
+        # print(monitor["width"], monitor["height"])
         raw_data = self.sct.grab(monitor)
         output = np.asarray(raw_data)
         screen = cv2.cvtColor(output,cv2.COLOR_BGRA2BGR)
