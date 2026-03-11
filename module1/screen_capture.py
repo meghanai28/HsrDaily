@@ -1,7 +1,7 @@
 # mss grabs pixel data gives back as grid of numbers
 # each screenshot - 3D array (1080,1920,3)
 
-#mss.mss() -> screen capture objuct
+# mss.mss() -> screen capture objuct
 # .monitors gives list of displays -> monitors[1] is primary
 #.grab(monitor) captures region and returns pixel data
 # wrap in numpy.array so we can work with it
@@ -12,10 +12,15 @@
 # cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED) does the matching Full doc: https://docs.opencv.org/4.x/df/dfb/group__imgproc__object.html
 # cv2.minMaxLoc(result) - finds the pos of best match
 
+# pyautogui 
+# pyautogui clicks at pos : pyautogui.click(x,y), press some key: pyautogui.press('esc'), pyautogui.FAILSAFE = True (move mouse top left corner it will exit script)
+
+
 import mss
 import numpy as np
 import pathlib
 import cv2
+import pyautogui
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "templates"
@@ -24,10 +29,12 @@ class ScreenCapture:
     def __init__ (self):
         self.sct = mss.mss()
 
-    def template_match(self):
+    def template_match(self,template_name):
         # load template
-        test_path = (TEMPLATE_DIR/"test_template.png").resolve()
+        test_path = (TEMPLATE_DIR/template_name).resolve()
         template = cv2.imread(str(test_path))
+        width = template.shape[0]
+        height = template.shape[1]
         if template is None:
             raise FileNotFoundError(f"Could not find file at {test_path}")
         
@@ -42,14 +49,25 @@ class ScreenCapture:
         # template matching
         result = cv2.matchTemplate(screen,template, cv2.TM_CCOEFF_NORMED)
         pos = cv2.minMaxLoc(result) # gives us min_val,max_val, min_loc, max_loc - coeff needs to be maxed
-        print(pos[1],pos[3])
+        return pos[1],pos[3],width,height
+
+    def find_and_click(self,template_name):
+        conf_value, top_left, temp_width, temp_height,  = self.template_match(template_name)
+        if conf_value > 0.85:
+            center_x = top_left[0] + (temp_width/2)
+            center_y = top_left[1] + (temp_height/2)
+            pyautogui.click(center_x,center_y)
+            return True
+        return False
+
+
+
 
  
 def main():
-    print("Hello Word")
     try:
         screencapt1 = ScreenCapture()
-        screencapt1.template_match()
+        screencapt1.find_and_click("test_template.png")
     except Exception as e:
         print(f"Error: {e}")
 
