@@ -15,15 +15,18 @@
 # pyautogui 
 # pyautogui clicks at pos : pyautogui.click(x,y), press some key: pyautogui.press('esc'), pyautogui.FAILSAFE = True (move mouse top left corner it will exit script)
 
-
 import mss
 import numpy as np
 import pathlib
 import cv2
 import pyautogui
+import time
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "templates"
+
+class TimeOutError(Exception):
+    pass
 
 class ScreenCapture:
     def __init__ (self):
@@ -61,9 +64,24 @@ class ScreenCapture:
         return False
 
 
+    # call template match in loop every 0.5 seconds. Finds template (score > 0.85) within timeout return position.
+    # time.time()
+    def wait_for(self,template_name,timeout=10):
+        start = time.time()
+        while (time.time() - start) < timeout:
+            conf_value, top_left, temp_width, temp_height = self.template_match(template_name)
+            if conf_value > 0.85:
+                return top_left
+            time.sleep(0.5)
+        raise TimeOutError(f"Ran out of time: {timeout}")
+
+    # if wait=True use wait for first, then click. if wait=False, check once and click only if found
+    #return true or false
+    # def click_template(self,template_name, wait=True,timeout=10):
 
 
- 
+    # emergencey stop check flag at start of key methods and raise Exception if its true
+
 def main():
     try:
         screencapt1 = ScreenCapture()
