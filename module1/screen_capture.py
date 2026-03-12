@@ -21,6 +21,7 @@ import pathlib
 import cv2
 import pyautogui
 import time
+import keyboard
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "templates"
@@ -28,12 +29,18 @@ TEMPLATE_DIR = BASE_DIR / "templates"
 class TimeOutError(Exception):
     pass
 
+class EmergencyStop(Exception):
+    pass
+
 class ScreenCapture:
     def __init__ (self):
         self.sct = mss.mss()
+        self.stopped = False
+        keyboard.add_hotkey('F10', self.on_hotkey_trigger)
 
     def template_match(self,template_name):
         # load template
+        self.check_stop()
         test_path = (TEMPLATE_DIR/template_name).resolve()
         template = cv2.imread(str(test_path))
         width = template.shape[1] # rows
@@ -55,6 +62,7 @@ class ScreenCapture:
         return pos[1],pos[3],width,height
 
     def find_and_click(self,template_name):
+        self.check_stop()
         conf_value, top_left, temp_width, temp_height,  = self.template_match(template_name)
         if conf_value > 0.85:
             center_x = top_left[0] + (temp_width/2)
@@ -69,17 +77,39 @@ class ScreenCapture:
     def wait_for(self,template_name,timeout=10):
         start = time.time()
         while (time.time() - start) < timeout:
+            self.check_stop()
             conf_value, top_left, temp_width, temp_height = self.template_match(template_name)
             if conf_value > 0.85:
-                return top_left
+                return top_left,temp_width,temp_height
             time.sleep(0.5)
         raise TimeOutError(f"Ran out of time: {timeout}")
 
     # if wait=True use wait for first, then click. if wait=False, check once and click only if found
     #return true or false
-    # def click_template(self,template_name, wait=True,timeout=10):
+    def click_template(self,template_name, wait=True,timeout=10):
+        self.check_stop()
+        if wait:
+            try:
+                pos,temp_width,temp_height = self.wait_for(template_name,timeout)
+            except Exception as e:
+                return False
+            center_x = pos[0] + (temp_width/2)
+            center_y = pos[1] + (temp_height/2)
+            pyautogui.click(center_x,center_y)
+            return True
+        else:
+            return self.find_and_click(template_name)
 
-
+    
+    def on_hotkey_trigger(self):
+        self.stopped = True
+        print("F10 hotkey pressed")
+    
+    
+    def check_stop(self):
+        if self.stopped:
+            raise EmergencyStop(f"F10 Emergency Key Clicked")
+        
     # emergencey stop check flag at start of key methods and raise Exception if its true
 
 def main():
