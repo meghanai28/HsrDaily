@@ -1,6 +1,7 @@
 {
     "hoyolab": {
         "cookie": "ltoken_v2=YOUR_TOKEN; ltuid_v2=YOUR_UID;",
+        "redeem_cookie": "cookie_token_v2=YOUR_TOKEN; account_id_v2=YOUR_ID_FOR_AUTH;",
         "uid": "YOUR_GAME_UID"
     }
 }

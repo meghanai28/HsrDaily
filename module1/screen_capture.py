@@ -91,7 +91,7 @@ class ScreenCapture:
         if wait:
             try:
                 pos,temp_width,temp_height = self.wait_for(template_name,timeout)
-            except Exception as e:
+            except TimeOutError as e:
                 return False
             center_x = pos[0] + (temp_width/2)
             center_y = pos[1] + (temp_height/2)
