@@ -3,8 +3,6 @@ import json
 import time
 from bs4 import BeautifulSoup
 
-# GET REQUEST
-
 INFO_URL = 'https://sg-public-api.hoyolab.com/event/luna/os/info?act_id=e202303301540311&lang=en-us'
 CHECK_IN_URL = 'https://sg-public-api.hoyolab.com/event/luna/os/sign'
 CODE_REEDEM_URL = 'https://public-operation-hkrpg.hoyoverse.com/common/apicdkey/api/webExchangeCdkeyRisk'

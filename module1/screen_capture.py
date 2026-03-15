@@ -59,6 +59,7 @@ class ScreenCapture:
         # template matching
         result = cv2.matchTemplate(screen,template, cv2.TM_CCOEFF_NORMED)
         pos = cv2.minMaxLoc(result) # gives us min_val,max_val, min_loc, max_loc - coeff needs to be maxed
+        print(f"Template: {template_name}, Score: {pos[1]}")
         return pos[1],pos[3],width,height
 
     def find_and_click(self,template_name):
@@ -100,7 +101,16 @@ class ScreenCapture:
         else:
             return self.find_and_click(template_name)
 
-    
+    def focus_game(self):
+        windows = pyautogui.getWindowsWithTitle("Honkai: Star Rail")
+        if windows:
+            windows[0].activate()
+            time.sleep(0.3)
+
+    def press_key(self, key):
+        self.check_stop()
+        keyboard.press_and_release(key)
+
     def on_hotkey_trigger(self):
         self.stopped = True
         print("F10 hotkey pressed")
